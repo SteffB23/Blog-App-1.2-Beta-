@@ -30,7 +30,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Support Blog</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Enemies Blog</h1>
           <button
             onClick={() => supabase.auth.signOut()}
             className="text-gray-600 hover:text-gray-900"
