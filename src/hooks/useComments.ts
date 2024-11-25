@@ -79,5 +79,20 @@ export function useComments(postId: string) {
     }
   }
 
-  return { comments, loading, error, addComment };
+  async function deleteComment(commentId: string) {
+    try {
+      const { error: deleteError } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (deleteError) throw deleteError;
+      await fetchComments();
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      throw err;
+    }
+  }
+
+  return { comments, loading, error, addComment, deleteComment };
 }

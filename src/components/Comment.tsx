@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useComments } from '../hooks/useComments';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare, Send, Trash2 } from 'lucide-react';
 
 interface CommentProps {
   postId: string;
@@ -9,9 +9,10 @@ interface CommentProps {
 
 export default function Comment({ postId }: CommentProps) {
   const { user } = useAuth();
-  const { comments, loading, addComment } = useComments(postId);
+  const { comments, loading, addComment, deleteComment } = useComments(postId);
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +26,19 @@ export default function Comment({ postId }: CommentProps) {
       console.error('Error adding comment:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+    setDeletingId(commentId);
+    try {
+      await deleteComment(commentId);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -59,13 +73,25 @@ export default function Comment({ postId }: CommentProps) {
         <div className="space-y-3">
           {comments.map((comment) => (
             <div key={comment.id} className="bg-gray-50 rounded-md p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium text-gray-900">
-                  {(comment as any).profiles?.username || 'Anonymous'}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(comment.created_at).toLocaleDateString()}
-                </span>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {(comment as any).profiles?.username || 'Anonymous'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(comment.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {user && comment.user_id === user.id && (
+                  <button
+                    onClick={() => handleDelete(comment.id)}
+                    disabled={deletingId === comment.id}
+                    className="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                    title="Delete comment"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
               <p className="text-sm text-gray-700">{comment.content}</p>
             </div>
